@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import hu.richardbodai.glrenderer.renderer.GLRenderer;
+import hu.richardbodai.glrenderer.renderer.OnTransformationListener;
 
 /**
  * Created by richardbodai on 4/4/16.
@@ -38,7 +39,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
                 float dx = (x - mPreviousX) * TOUCH_SCALE_FACTOR;
                 float dy = (y - mPreviousY) * TOUCH_SCALE_FACTOR;
 
-                mRenderer.getMatrixHandler().setMove(dx, dy);
+                mRenderer.doTranslate(dx, dy);
                 requestRender();
                 break;
         }

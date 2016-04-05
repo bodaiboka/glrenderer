@@ -1,5 +1,8 @@
 package hu.richardbodai.glrenderer.view;
 
+import android.opengl.GLES20;
+import android.opengl.Matrix;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -14,22 +17,32 @@ public class GLScene {
 
     private final int BYTES_PER_FLOAT = 4;
     private FloatBuffer mVertexBuffer;
-    private FloatBuffer mVertexBufferOnly_X;
-    private FloatBuffer mVertexBufferOnly_Y;
     private float[] mData;
-    private float[] mDataOnly_X;
-    private float[] mDataOnly_Y;
-
-    public FloatBuffer getVertexBufferOnly_Y() {
-        return mVertexBufferOnly_Y;
-    }
-
-    public enum BindDimension {
-        X, Y, Z
-    }
+    private float[] mModelMatrix = new float[16];
+    private float[] mTranslateMatrix = new float[16];
+    private ITransformation mTranformationInterface;
 
     public GLScene() {
         mVertexBuffer = null;
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mTranslateMatrix, 0);
+        mTranformationInterface = new ITransformation() {
+            @Override
+            public void onTranslate(float dx, float dy, float[] translationMatrix) {
+                Matrix.translateM(translationMatrix, 0, dx, dy, 0.0f);
+            }
+        };
+    }
+
+    public GLScene(ITransformation customTransfomration) {
+        mVertexBuffer = null;
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mTranslateMatrix, 0);
+        mTranformationInterface = customTransfomration;
+    }
+
+    public void setCustomTransformationInterface(ITransformation customTransformationInterface) {
+        mTranformationInterface = customTransformationInterface;
     }
 
     public void setVertexBuffer(float[] data) {
@@ -38,41 +51,12 @@ public class GLScene {
         mVertexBuffer.put(data).position(0);
     }
 
-    public void setVertexBuffer(float[] data, BindDimension bindDimension) {
-        switch (bindDimension) {
-            case X:
-                mDataOnly_Y = data;
-                mVertexBufferOnly_Y = ByteBuffer.allocateDirect(data.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
-                mVertexBufferOnly_Y.put(data).position(0);
-                break;
-            case Y:
-                mDataOnly_X = data;
-                mVertexBufferOnly_X = ByteBuffer.allocateDirect(data.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
-                mVertexBufferOnly_X.put(data).position(0);
-                break;
-            case Z:
-                break;
-        }
-
-    }
-
     public FloatBuffer getVertexBuffer() {
         return mVertexBuffer;
     }
 
-    public FloatBuffer getVertexBufferOnly_X() {
-        return mVertexBufferOnly_X;
-    }
-
     public int getVertexCount() {
         return mData.length / 7;
-    }
-
-    public int getVertexCountBindY() {
-        return mDataOnly_X.length / 7;
-    }
-    public int getVertexCountBindX() {
-        return mDataOnly_Y.length / 7;
     }
 
     public void addShapes(ArrayList<GLShape> shapes) {
@@ -91,19 +75,25 @@ public class GLScene {
         setVertexBuffer(data);
     }
 
-    public void addShapes(ArrayList<GLShape> shapes, BindDimension bindDimension) {
-        ArrayList<Float> stockData = new ArrayList<>();
-        for (int i = 0; i < shapes.size(); i++) {
-            float[] vertices = shapes.get(i).convertToGLFormat();
-            for (int j = 0; j < vertices.length; j++) {
-                stockData.add(vertices[j]);
-            }
-        }
-        float[] data = new float[stockData.size()];
-        int i = 0;
-        for (Float f : stockData) {
-            data[i++] = (f != null ? f : Float.NaN);
-        }
-        setVertexBuffer(data, bindDimension);
+    public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix, int pMVPMatrixHandle) {
+        // Pass in the position information
+
+        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
+        // (which currently contains model * view).
+        Matrix.multiplyMM(pMVPMatrix, 0, pViewMatrix, 0, mModelMatrix, 0);
+
+        Matrix.multiplyMM(pMVPMatrix, 0, pMVPMatrix, 0, mTranslateMatrix, 0);
+
+        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
+        // (which now contains model * view * projection).
+        Matrix.multiplyMM(pMVPMatrix, 0, pProjectionMatrix, 0, pMVPMatrix, 0);
+
+        GLES20.glUniformMatrix4fv(pMVPMatrixHandle, 1, false, pMVPMatrix, 0);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, getVertexCount());
     }
+
+    public void doTranslate(float dx, float dy) {
+        mTranformationInterface.onTranslate(dx, dy, mTranslateMatrix);
+    }
+
 }

@@ -2,6 +2,8 @@ package hu.richardbodai.glrenderer.view;
 
 import android.opengl.GLSurfaceView;
 
+import java.util.ArrayList;
+
 import hu.richardbodai.glrenderer.renderer.GLRenderer;
 
 /**
@@ -35,5 +37,9 @@ public class GLView {
 
     public GLScene getGLScene() {
         return mGLScene;
+    }
+
+    public void setGLScenes(ArrayList<GLScene> scenes) {
+        mRenderer.setGLScenes(scenes);
     }
 }

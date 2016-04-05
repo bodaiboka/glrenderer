@@ -23,4 +23,9 @@ public class GLRendererES1 extends GLRenderer {
     public void onDrawFrame(GL10 gl) {
 
     }
+
+    @Override
+    public void doTranslate(float dx, float dy) {
+
+    }
 }

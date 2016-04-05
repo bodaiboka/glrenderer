@@ -20,11 +20,12 @@ public class Triangle implements GLShape {
         };
     }
 
-    public void setColor(float r, float g, float b, float a) {
+    public GLShape setColor(float r, float g, float b, float a) {
         mColor[0] = r;
         mColor[1] = g;
         mColor[2] = b;
         mColor[3] = a;
+        return this;
     }
 
     @Override

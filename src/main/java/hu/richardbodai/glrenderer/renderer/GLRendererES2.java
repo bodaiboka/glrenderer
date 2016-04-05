@@ -112,98 +112,29 @@ public class GLRendererES2 extends GLRenderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
         Matrix.setIdentityM(mModelMatrix, 0);
-        draw(mGLScene.getVertexBuffer());
 
-        drawBindX(mGLScene.getVertexBufferOnly_Y());
-        drawBindY(mGLScene.getVertexBufferOnly_X());
+        for (int i = 0; i < mGLScenes.size(); i++) {
+            FloatBuffer vertexBuffer = mGLScenes.get(i).getVertexBuffer();
+            vertexBuffer.position(mPositionOffset);
+            GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
+                    mStrideBytes, vertexBuffer);
+
+            GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+            // Pass in the color information
+            vertexBuffer.position(mColorOffset);
+            GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
+                    mStrideBytes, vertexBuffer);
+
+            GLES20.glEnableVertexAttribArray(mColorHandle);
+            mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle);
+        }
     }
 
-    public void draw(FloatBuffer vertexBuffer) {
-        // Pass in the position information
-        vertexBuffer.position(mPositionOffset);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Pass in the color information
-        vertexBuffer.position(mColorOffset);
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mColorHandle);
-
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mMatrixHandler.getTranslateMatrix(), 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mGLScene.getVertexCount());
+    @Override
+    public void doTranslate(float dx, float dy) {
+        for (int i = 0; i < mGLScenes.size(); i++) {
+            mGLScenes.get(i).doTranslate(dx, dy);
+        }
     }
-
-    public void drawBindY(FloatBuffer vertexBuffer) {
-        // Pass in the position information
-        vertexBuffer.position(mPositionOffset);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Pass in the color information
-        vertexBuffer.position(mColorOffset);
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mColorHandle);
-
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mMatrixHandler.getTranslateMatrixOnly_X(), 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mGLScene.getVertexCountBindY());
-    }
-
-    public void drawBindX(FloatBuffer vertexBuffer) {
-        // Pass in the position information
-        vertexBuffer.position(mPositionOffset);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Pass in the color information
-        vertexBuffer.position(mColorOffset);
-        GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                mStrideBytes, vertexBuffer);
-
-        GLES20.glEnableVertexAttribArray(mColorHandle);
-
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-
-        Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mMatrixHandler.getTranslateMatrixOnly_Y(), 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mGLScene.getVertexCountBindX());
-    }
-
-
 }
