@@ -19,7 +19,7 @@ public class GLConfig {
 
     final String DEFAULT_VERTEX_SHADER = "uniform mat4 u_MVPMatrix;      \n"     // A constant representing the combined model/view/projection matrix.
 
-            + "attribute vec4 a_Position;     \n"     // Per-vertex position information we will pass in.
+    + "attribute vec4 a_Position;     \n"     // Per-vertex position information we will pass in.
             + "attribute vec4 a_Color;        \n"     // Per-vertex color information we will pass in.
 
             + "varying vec4 v_Color;          \n"     // This will be passed into the fragment shader.
@@ -41,6 +41,24 @@ public class GLConfig {
             + "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
             + "}                              \n";
 
+
+    public static final String vs_Image =
+            "uniform mat4 u_MVPMatrix;" +
+                    "attribute vec4 a_Position;" +
+                    "attribute vec2 a_TexCoord;" +
+                    "varying vec2 v_TexCoord;" +
+                    "void main() {" +
+                    "  gl_Position = u_MVPMatrix * a_Position;" +
+                    "  v_TexCoord = a_TexCoord;" +
+                    "}";
+    public static final String fs_Image =
+            "precision mediump float;" +
+                    "varying vec2 v_TexCoord;" +
+                    "uniform sampler2D s_Texture;" +
+                    "void main() {" +
+                    "  gl_FragColor = texture2D( s_Texture, v_TexCoord );" +
+                    "}";
+
     public GL_VERSION gl_version;
     public PROJECTION_MODE projection_mode;
     public String vertex_shader;
@@ -49,8 +67,8 @@ public class GLConfig {
     public GLConfig() {
         gl_version = GL_VERSION.ES_2;
         projection_mode = PROJECTION_MODE.PERSPECTIVE;
-        vertex_shader = DEFAULT_VERTEX_SHADER;
-        fragment_shader = DEFAULT_FRAGMENT_SHADER;
+        vertex_shader = vs_Image;
+        fragment_shader = fs_Image;
     }
 
 }

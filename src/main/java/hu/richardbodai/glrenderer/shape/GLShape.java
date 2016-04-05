@@ -5,4 +5,6 @@ package hu.richardbodai.glrenderer.shape;
  */
 public interface GLShape {
     float[] convertToGLFormat();
+
+    float[] getTexels();
 }

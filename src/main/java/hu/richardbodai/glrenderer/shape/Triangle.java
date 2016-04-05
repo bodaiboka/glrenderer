@@ -8,6 +8,8 @@ public class Triangle implements GLShape {
     float mX1, mY1, mX2, mY2, mX3, mY3, mZ1, mZ2, mZ3;
     float[] mColor;
 
+    public static float uvs[];
+
     public Triangle(float x1, float y1, float x2, float y2, float x3, float y3) {
         mX1 = x1;
         mX2 = x2;
@@ -17,6 +19,11 @@ public class Triangle implements GLShape {
         mY3 = y3;
         mColor = new float[] {
                 1.0f, 1.0f, 1.0f, 1.0f
+        };
+        uvs = new float[] {
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+                0.5f, 0.0f
         };
     }
 
@@ -32,12 +39,17 @@ public class Triangle implements GLShape {
     public float[] convertToGLFormat() {
         float[] data = {
                 mX1, mY1, mZ1,
-                mColor[0], mColor[1], mColor[2], mColor[3],
+                /*mColor[0], mColor[1], mColor[2], mColor[3],*/
                 mX2, mY2, mZ2,
-                mColor[0], mColor[1], mColor[2], mColor[3],
-                mX3, mY3, mZ3,
-                mColor[0], mColor[1], mColor[2], mColor[3]
+                /*mColor[0], mColor[1], mColor[2], mColor[3],*/
+                mX3, mY3, mZ3
+                /*mColor[0], mColor[1], mColor[2], mColor[3]*/
         };
         return data;
+    }
+
+    @Override
+    public float[] getTexels() {
+        return uvs;
     }
 }

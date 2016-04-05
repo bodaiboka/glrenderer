@@ -47,6 +47,7 @@ public class GLRendererES2 extends GLRenderer {
     private final int mColorDataSize = 4;
 
     private ShaderHandler mShaderHandler;
+    private int mTexCoordLoc;
 
     public GLRendererES2(GLConfig glConfig) {
         mShaderHandler = new ShaderHandler(glConfig.vertex_shader, glConfig.fragment_shader);
@@ -84,6 +85,7 @@ public class GLRendererES2 extends GLRenderer {
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");
+        mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord" );
 
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(mShaderHandler.getProgramGLId());
@@ -117,16 +119,33 @@ public class GLRendererES2 extends GLRenderer {
             FloatBuffer vertexBuffer = mGLScenes.get(i).getVertexBuffer();
             vertexBuffer.position(mPositionOffset);
             GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                    mStrideBytes, vertexBuffer);
+                    0, vertexBuffer);
 
             GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-            // Pass in the color information
+            /*// Pass in the color information
             vertexBuffer.position(mColorOffset);
             GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
                     mStrideBytes, vertexBuffer);
 
-            GLES20.glEnableVertexAttribArray(mColorHandle);
+            GLES20.glEnableVertexAttribArray(mColorHandle);*/
+
+
+
+            // Enable generic vertex attribute array
+            GLES20.glEnableVertexAttribArray ( mTexCoordLoc );
+
+            // Prepare the texturecoordinates
+            GLES20.glVertexAttribPointer ( mTexCoordLoc, 2, GLES20.GL_FLOAT,
+                    false,
+                    0, mGLScenes.get(i).getTextureBuffer());
+
+            // Get handle to textures locations
+            int mSamplerLoc = GLES20.glGetUniformLocation (mShaderHandler.getProgramGLId(),
+                    "s_Texture" );
+
+            GLES20.glUniform1i ( mSamplerLoc, 0);
+
             mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle);
         }
     }

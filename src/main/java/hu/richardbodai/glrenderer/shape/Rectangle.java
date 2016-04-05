@@ -7,10 +7,17 @@ public class Rectangle implements GLShape {
 
     Triangle triangle1;
     Triangle triangle2;
+    public static float uvs[];
 
     public Rectangle(float upperLeftX, float upperLeftY, float downerRightX, float downerRightY) {
         triangle1 = new Triangle(upperLeftX, upperLeftY, upperLeftX, downerRightY, downerRightX, downerRightY);
         triangle2 = new Triangle(upperLeftX, upperLeftY, downerRightX, downerRightY, downerRightX, upperLeftY);
+        uvs = new float[] {
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f
+        };
     }
 
     public GLShape setColor(float r, float g, float b, float a) {
@@ -32,4 +39,11 @@ public class Rectangle implements GLShape {
         }
         return data;
     }
+
+    @Override
+    public float[] getTexels() {
+        return uvs;
+    }
+
+
 }

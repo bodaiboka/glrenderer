@@ -81,8 +81,8 @@ public class ShaderHandler {
             // Bind the fragment shader to the program.
             GLES20.glAttachShader(programHandle, mFragmentShaderGLId);
             // Bind attributes
-            GLES20.glBindAttribLocation(programHandle, 0, "a_Position");
-            GLES20.glBindAttribLocation(programHandle, 1, "a_Color");
+           /* GLES20.glBindAttribLocation(programHandle, 0, "a_Position");
+            GLES20.glBindAttribLocation(programHandle, 1, "a_Color");*/
             // Link the two shaders together into a program.
             GLES20.glLinkProgram(programHandle);
             // Get the link status.
