@@ -31,6 +31,7 @@ public class GLScene {
     private ITransformation mTranformationInterface;
     private Context mContext;
     private int mId;
+    boolean hasTexture = false;
     ArrayList<GLShape> shapes;
     FloatBuffer colorBuffer;
 
@@ -104,7 +105,7 @@ public class GLScene {
     }
 
     public int getVertexCount() {
-        return mData.length / 6;
+        return mData.length / 3;
     }
 
     public void addShapes(ArrayList<GLShape> shapes) {
@@ -124,6 +125,14 @@ public class GLScene {
         setVertexBuffer(data);
     }
 
+    public boolean isHasTexture() {
+        return hasTexture;
+    }
+
+    public void setHasTexture(boolean hasTexture) {
+        this.hasTexture = hasTexture;
+    }
+
     public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix, int pMVPMatrixHandle, int pTexCoordLoc, int pSamplerLoc, int pPositionHandle, int colorHandel) {
 
         Matrix.multiplyMM(pMVPMatrix, 0, pViewMatrix, 0, mModelMatrix, 0);
@@ -140,7 +149,21 @@ public class GLScene {
                 0, colorBuffer);
         GLES20.glEnableVertexAttribArray(colorHandel);
 
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, pTexCoordLoc);
+        GLES20.glUniform1i(pSamplerLoc, 0);
+        // Prepare the texturecoordinates
+        GLES20.glVertexAttribPointer(pTexCoordLoc, 2, GLES20.GL_FLOAT,
+                false,
+                0, mTextureBuffer);
+        if (hasTexture) {
+
+            GLES20.glEnableVertexAttribArray(pTexCoordLoc);
+        }
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, getVertexCount());
+        if (hasTexture) {
+            GLES20.glDisableVertexAttribArray(pTexCoordLoc);
+        }
 
     }
 

@@ -15,7 +15,7 @@ public class Rectangle implements GLShape {
 
     Triangle triangle1;
     Triangle triangle2;
-    public static float uvs[];
+    public float uvs[];
     int mTextureHandle;
     float[] mData;
     FloatBuffer mVertexBuffer;
@@ -45,7 +45,7 @@ public class Rectangle implements GLShape {
     }
 
     public int getVertexCount() {
-        return mData.length / 6;
+        return mData.length / 3;
     }
 
     public Rectangle setColor(float r, float g, float b, float a) {
@@ -66,7 +66,7 @@ public class Rectangle implements GLShape {
 
     @Override
     public float[] convertToGLFormat() {
-        float[] data = new float[36];
+        float[] data = new float[18];
         float[] data1 = triangle1.convertToGLFormat();
         float[] data2 = triangle2.convertToGLFormat();
         for (int i = 0; i < data1.length; i++) {
@@ -111,6 +111,11 @@ public class Rectangle implements GLShape {
     @Override
     public float[] getColor() {
         return mColors;
+    }
+
+    @Override
+    public void setTexels(float[] data) {
+        uvs = data;
     }
 
     @Override

@@ -59,6 +59,11 @@ public class Triangle implements GLShape {
     }
 
     @Override
+    public void setTexels(float[] data) {
+
+    }
+
+    @Override
     public void draw(int p, int t, int s, int c, int m, float[] mh) {
 
     }

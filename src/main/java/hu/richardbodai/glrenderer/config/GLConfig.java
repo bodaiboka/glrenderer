@@ -9,6 +9,7 @@ public class GLConfig {
 
     public static int defaultProgramHandle;
     public static int textureProgramHandle;
+    public int getTextureImageId;
 
     public enum GL_VERSION {
         ES_1, ES_2
@@ -78,8 +79,8 @@ public class GLConfig {
     public GLConfig() {
         gl_version = GL_VERSION.ES_2;
         projection_mode = PROJECTION_MODE.PERSPECTIVE;
-        vertex_shader = DEFAULT_VERTEX_SHADER;
-        fragment_shader = DEFAULT_FRAGMENT_SHADER;
+        vertex_shader = vs_Image;
+        fragment_shader = fs_Image;
     }
 
 }

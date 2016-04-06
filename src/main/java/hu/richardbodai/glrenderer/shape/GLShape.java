@@ -10,6 +10,8 @@ public interface GLShape {
 
     float[] getColor();
 
+    void setTexels(float[] data);
+
     void draw(int p, int t, int s, int c, int m, float[] mh);
 
     boolean hasTexture();
