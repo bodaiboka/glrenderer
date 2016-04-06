@@ -8,9 +8,12 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import hu.richardbodai.glrenderer.R;
 import hu.richardbodai.glrenderer.config.GLConfig;
 import hu.richardbodai.glrenderer.handler.MatrixHandler;
 import hu.richardbodai.glrenderer.handler.ShaderHandler;
+import hu.richardbodai.glrenderer.shape.GLShape;
+import hu.richardbodai.glrenderer.util.TextureHelper;
 
 /**
  * Created by richardbodai on 4/3/16.
@@ -48,8 +51,14 @@ public class GLRendererES2 extends GLRenderer {
 
     private ShaderHandler mShaderHandler;
     private int mTexCoordLoc;
+    private int mSamplerLoc;
+
+    private GLConfig glConfig;
+    private int mTex1;
+    private int mTex2;
 
     public GLRendererES2(GLConfig glConfig) {
+        this.glConfig = glConfig;
         mShaderHandler = new ShaderHandler(glConfig.vertex_shader, glConfig.fragment_shader);
     }
 
@@ -57,6 +66,15 @@ public class GLRendererES2 extends GLRenderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background clear color to gray.
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+
+        for (int i = 0; i < mGLScenes.size(); i++) {
+            for (int j = 0; j < mGLScenes.get(i).getShapes().size(); j++) {
+                GLShape shape = mGLScenes.get(i).getShapes().get(j);
+                if (shape.hasTexture()) {
+                    shape.setTextureHandle(TextureHelper.loadTexture(glConfig.context, shape.getImageId()));
+                }
+            }
+        }
 
         // Position the eye behind the origin.
         final float eyeX = 0.0f;
@@ -84,11 +102,13 @@ public class GLRendererES2 extends GLRenderer {
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");
-        mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord" );
-
+        /*mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");*/
+        mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord");
+        mSamplerLoc = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "s_Texture");
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(mShaderHandler.getProgramGLId());
+
+
     }
 
     @Override
@@ -116,37 +136,7 @@ public class GLRendererES2 extends GLRenderer {
         Matrix.setIdentityM(mModelMatrix, 0);
 
         for (int i = 0; i < mGLScenes.size(); i++) {
-            FloatBuffer vertexBuffer = mGLScenes.get(i).getVertexBuffer();
-            vertexBuffer.position(mPositionOffset);
-            GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
-                    0, vertexBuffer);
-
-            GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-            /*// Pass in the color information
-            vertexBuffer.position(mColorOffset);
-            GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                    mStrideBytes, vertexBuffer);
-
-            GLES20.glEnableVertexAttribArray(mColorHandle);*/
-
-
-
-            // Enable generic vertex attribute array
-            GLES20.glEnableVertexAttribArray ( mTexCoordLoc );
-
-            // Prepare the texturecoordinates
-            GLES20.glVertexAttribPointer ( mTexCoordLoc, 2, GLES20.GL_FLOAT,
-                    false,
-                    0, mGLScenes.get(i).getTextureBuffer());
-
-            // Get handle to textures locations
-            int mSamplerLoc = GLES20.glGetUniformLocation (mShaderHandler.getProgramGLId(),
-                    "s_Texture" );
-
-            GLES20.glUniform1i ( mSamplerLoc, 0);
-
-            mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle);
+            mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle, mTexCoordLoc, mSamplerLoc, mPositionHandle);
         }
     }
 

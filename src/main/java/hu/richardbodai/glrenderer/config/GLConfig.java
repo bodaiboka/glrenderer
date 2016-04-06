@@ -1,5 +1,7 @@
 package hu.richardbodai.glrenderer.config;
 
+import android.content.Context;
+
 /**
  * Created by richardbodai on 4/4/16.
  */
@@ -64,6 +66,7 @@ public class GLConfig {
     public String vertex_shader;
     public String fragment_shader;
 
+    public Context context;
     public GLConfig() {
         gl_version = GL_VERSION.ES_2;
         projection_mode = PROJECTION_MODE.PERSPECTIVE;

@@ -7,4 +7,12 @@ public interface GLShape {
     float[] convertToGLFormat();
 
     float[] getTexels();
+
+    void draw(int p, int t, int s);
+
+    boolean hasTexture();
+
+    void setTextureHandle(int t);
+
+    int getImageId();
 }

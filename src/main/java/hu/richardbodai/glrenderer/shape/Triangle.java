@@ -52,4 +52,24 @@ public class Triangle implements GLShape {
     public float[] getTexels() {
         return uvs;
     }
+
+    @Override
+    public void draw(int p, int t, int s) {
+
+    }
+
+    @Override
+    public boolean hasTexture() {
+        return false;
+    }
+
+    @Override
+    public void setTextureHandle(int t) {
+
+    }
+
+    @Override
+    public int getImageId() {
+        return 0;
+    }
 }
