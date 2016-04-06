@@ -22,6 +22,7 @@ public class Rectangle implements GLShape {
     private FloatBuffer mTextureBuffer;
     private int mImageId;
     public boolean hasTexture = false;
+    private FloatBuffer colorBuffer;
 
 
     public Rectangle(float upperLeftX, float upperLeftY, float downerRightX, float downerRightY) {
@@ -37,15 +38,25 @@ public class Rectangle implements GLShape {
         };
         setVertexBuffer(convertToGLFormat());
         setTextureBuffer(uvs);
+        setColor(1,1,1,1);
     }
 
     public int getVertexCount() {
         return mData.length / 7;
     }
 
-    public GLShape setColor(float r, float g, float b, float a) {
+    public Rectangle setColor(float r, float g, float b, float a) {
         triangle1.setColor(r, g, b, a);
         triangle2.setColor(r, g, b, a);
+        float colors[] = {
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a
+        };
+        setColorBuffer(colors);
         return this;
     }
 
@@ -73,6 +84,11 @@ public class Rectangle implements GLShape {
         mTextureBuffer = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mTextureBuffer.put(data).position(0);
     }
+
+    public void setColorBuffer(float[] data) {
+        colorBuffer = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        colorBuffer.put(data).position(0);
+    }
     
     public void setTextureImage(int id) {
         mImageId = id;
@@ -89,13 +105,20 @@ public class Rectangle implements GLShape {
     }
 
     @Override
-    public void draw(int mPositionHandle, int mTexCoordLoc, int mSamplerLoc) {
+    public void draw(int mPositionHandle, int mTexCoordLoc, int mSamplerLoc, int colorHandel) {
         mVertexBuffer.position(0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureHandle);
         GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false,
                 0, mVertexBuffer);
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+        colorBuffer.position(0);
+        GLES20.glVertexAttribPointer(colorHandel, 4, GLES20.GL_FLOAT, false,
+                0, colorBuffer);
+        GLES20.glEnableVertexAttribArray(colorHandel);
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureHandle);
         GLES20.glUniform1i(mSamplerLoc, 0);
 
         // Prepare the texturecoordinates

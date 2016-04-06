@@ -102,7 +102,7 @@ public class GLRendererES2 extends GLRenderer {
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Position");
-        /*mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");*/
+        mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");
         mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord");
         mSamplerLoc = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "s_Texture");
         // Tell OpenGL to use this program when rendering.
@@ -136,7 +136,7 @@ public class GLRendererES2 extends GLRenderer {
         Matrix.setIdentityM(mModelMatrix, 0);
 
         for (int i = 0; i < mGLScenes.size(); i++) {
-            mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle, mTexCoordLoc, mSamplerLoc, mPositionHandle);
+            mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle, mTexCoordLoc, mSamplerLoc, mPositionHandle, mColorHandle);
         }
     }
 

@@ -106,7 +106,7 @@ public class GLScene {
         setVertexBuffer(data);
     }
 
-    public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix, int pMVPMatrixHandle, int pTexCoordLoc, int pSamplerLoc, int pPositionHandle) {
+    public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix, int pMVPMatrixHandle, int pTexCoordLoc, int pSamplerLoc, int pPositionHandle, int colorHandel) {
         // Pass in the position information
 
         // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
@@ -121,7 +121,7 @@ public class GLScene {
         GLES20.glUniformMatrix4fv(pMVPMatrixHandle, 1, false, pMVPMatrix, 0);
 
         for (int i = 0; i < shapes.size(); i++) {
-            shapes.get(i).draw(pPositionHandle, pTexCoordLoc, pSamplerLoc);
+            shapes.get(i).draw(pPositionHandle, pTexCoordLoc, pSamplerLoc, colorHandel);
         }
 
 

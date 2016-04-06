@@ -54,7 +54,7 @@ public class Triangle implements GLShape {
     }
 
     @Override
-    public void draw(int p, int t, int s) {
+    public void draw(int p, int t, int s, int c) {
 
     }
 

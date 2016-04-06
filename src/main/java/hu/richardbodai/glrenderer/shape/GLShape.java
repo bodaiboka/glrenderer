@@ -8,7 +8,7 @@ public interface GLShape {
 
     float[] getTexels();
 
-    void draw(int p, int t, int s);
+    void draw(int p, int t, int s, int c);
 
     boolean hasTexture();
 
