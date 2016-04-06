@@ -13,6 +13,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import hu.richardbodai.glrenderer.config.GLConfig;
 import hu.richardbodai.glrenderer.shape.GLShape;
 
 /**
@@ -31,6 +32,16 @@ public class GLScene {
     private Context mContext;
     private int mId;
     ArrayList<GLShape> shapes;
+    FloatBuffer colorBuffer;
+
+    float[] color = {
+            1,1,1,1,
+            1,1,1,1,
+            1,1,1,1,
+            1,1,1,1,
+            1,1,1,1,
+            1,1,1,1
+    };
 
     public GLScene() {
         mVertexBuffer = null;
@@ -44,6 +55,8 @@ public class GLScene {
             }
         };
     }
+
+
 
     public ArrayList<GLShape> getShapes() {
         return shapes;
@@ -81,12 +94,17 @@ public class GLScene {
         mTextureBuffer.put(data).position(0);
     }
 
+    public void setColorBuffer(float[] data) {
+        colorBuffer = ByteBuffer.allocateDirect(data.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        colorBuffer.put(data).position(0);
+    }
+
     public FloatBuffer getVertexBuffer() {
         return mVertexBuffer;
     }
 
     public int getVertexCount() {
-        return mData.length / 7;
+        return mData.length / 6;
     }
 
     public void addShapes(ArrayList<GLShape> shapes) {
@@ -107,25 +125,23 @@ public class GLScene {
     }
 
     public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix, int pMVPMatrixHandle, int pTexCoordLoc, int pSamplerLoc, int pPositionHandle, int colorHandel) {
-        // Pass in the position information
 
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
         Matrix.multiplyMM(pMVPMatrix, 0, pViewMatrix, 0, mModelMatrix, 0);
-
         Matrix.multiplyMM(pMVPMatrix, 0, pMVPMatrix, 0, mTranslateMatrix, 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
         Matrix.multiplyMM(pMVPMatrix, 0, pProjectionMatrix, 0, pMVPMatrix, 0);
+
         GLES20.glUniformMatrix4fv(pMVPMatrixHandle, 1, false, pMVPMatrix, 0);
+        mVertexBuffer.position(0);
+        GLES20.glVertexAttribPointer(pPositionHandle, 3, GLES20.GL_FLOAT, false,
+                0, mVertexBuffer);
+        GLES20.glEnableVertexAttribArray(pPositionHandle);
+        colorBuffer.position(0);
+        GLES20.glVertexAttribPointer(colorHandel, 4, GLES20.GL_FLOAT, false,
+                0, colorBuffer);
+        GLES20.glEnableVertexAttribArray(colorHandel);
 
-        for (int i = 0; i < shapes.size(); i++) {
-            shapes.get(i).draw(pPositionHandle, pTexCoordLoc, pSamplerLoc, colorHandel);
-        }
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, getVertexCount());
 
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
     }
 
     public void addShapesTexture(ArrayList<GLShape> shapes) {
@@ -142,6 +158,22 @@ public class GLScene {
             data[i++] = (f != null ? f : Float.NaN);
         }
         setTextureBuffer(data);
+    }
+
+    public void addShapesColor(ArrayList<GLShape> shapes) {
+        ArrayList<Float> stockData = new ArrayList<>();
+        for (int i = 0; i < shapes.size(); i++) {
+            float[] texels = shapes.get(i).getColor();
+            for (int j = 0; j < texels.length; j++) {
+                stockData.add(texels[j]);
+            }
+        }
+        float[] data = new float[stockData.size()];
+        int i = 0;
+        for (Float f : stockData) {
+            data[i++] = (f != null ? f : Float.NaN);
+        }
+        setColorBuffer(data);
     }
 
     void initTexture() {

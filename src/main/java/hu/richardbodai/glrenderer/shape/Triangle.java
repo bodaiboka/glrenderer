@@ -54,7 +54,12 @@ public class Triangle implements GLShape {
     }
 
     @Override
-    public void draw(int p, int t, int s, int c) {
+    public float[] getColor() {
+        return new float[0];
+    }
+
+    @Override
+    public void draw(int p, int t, int s, int c, int m, float[] mh) {
 
     }
 

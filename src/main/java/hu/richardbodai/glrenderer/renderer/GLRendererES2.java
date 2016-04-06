@@ -56,6 +56,7 @@ public class GLRendererES2 extends GLRenderer {
     private GLConfig glConfig;
     private int mTex1;
     private int mTex2;
+    private int mDefaultProgram;
 
     public GLRendererES2(GLConfig glConfig) {
         this.glConfig = glConfig;
@@ -66,6 +67,9 @@ public class GLRendererES2 extends GLRenderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background clear color to gray.
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+
+        mDefaultProgram = mShaderHandler.getDefaultProgram();
+        GLConfig.defaultProgramHandle = mDefaultProgram;
 
         for (int i = 0; i < mGLScenes.size(); i++) {
             for (int j = 0; j < mGLScenes.get(i).getShapes().size(); j++) {
@@ -98,13 +102,13 @@ public class GLRendererES2 extends GLRenderer {
 
         mShaderHandler.loadShaders();
         mShaderHandler.linkShadersToProgram();
-
+        GLConfig.textureProgramHandle = mShaderHandler.getProgramGLId();
         // Set program handles. These will later be used to pass in values to the program.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "u_MVPMatrix");
         mPositionHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_Color");
-        mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord");
-        mSamplerLoc = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "s_Texture");
+/*        mTexCoordLoc = GLES20.glGetAttribLocation(mShaderHandler.getProgramGLId(), "a_TexCoord");
+        mSamplerLoc = GLES20.glGetUniformLocation(mShaderHandler.getProgramGLId(), "s_Texture");*/
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(mShaderHandler.getProgramGLId());
 
@@ -134,6 +138,8 @@ public class GLRendererES2 extends GLRenderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
         Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+
 
         for (int i = 0; i < mGLScenes.size(); i++) {
             mGLScenes.get(i).draw(mMVPMatrix, mViewMatrix, mProjectionMatrix, mMVPMatrixHandle, mTexCoordLoc, mSamplerLoc, mPositionHandle, mColorHandle);

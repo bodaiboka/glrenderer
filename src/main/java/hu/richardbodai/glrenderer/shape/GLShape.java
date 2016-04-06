@@ -8,11 +8,14 @@ public interface GLShape {
 
     float[] getTexels();
 
-    void draw(int p, int t, int s, int c);
+    float[] getColor();
+
+    void draw(int p, int t, int s, int c, int m, float[] mh);
 
     boolean hasTexture();
 
     void setTextureHandle(int t);
 
     int getImageId();
+
 }
