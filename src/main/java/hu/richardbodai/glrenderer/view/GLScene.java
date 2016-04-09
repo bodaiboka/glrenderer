@@ -35,15 +35,6 @@ public class GLScene {
     ArrayList<GLShape> shapes;
     FloatBuffer colorBuffer;
 
-    float[] color = {
-            1,1,1,1,
-            1,1,1,1,
-            1,1,1,1,
-            1,1,1,1,
-            1,1,1,1,
-            1,1,1,1
-    };
-
     public GLScene() {
         mVertexBuffer = null;
         mTextureBuffer = null;
@@ -55,16 +46,6 @@ public class GLScene {
                 Matrix.translateM(translationMatrix, 0, dx, dy, 0.0f);
             }
         };
-    }
-
-
-
-    public ArrayList<GLShape> getShapes() {
-        return shapes;
-    }
-
-    public void setContext(Context context) {
-        mContext = context;
     }
 
     public void setImage(int id) {
@@ -98,10 +79,6 @@ public class GLScene {
     public void setColorBuffer(float[] data) {
         colorBuffer = ByteBuffer.allocateDirect(data.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
         colorBuffer.put(data).position(0);
-    }
-
-    public FloatBuffer getVertexBuffer() {
-        return mVertexBuffer;
     }
 
     public int getVertexCount() {
@@ -167,7 +144,7 @@ public class GLScene {
 
     }
 
-    public void addShapesTexture(ArrayList<GLShape> shapes) {
+    private void addShapesTexture(ArrayList<GLShape> shapes) {
         ArrayList<Float> stockData = new ArrayList<>();
         for (int i = 0; i < shapes.size(); i++) {
             float[] texels = shapes.get(i).getTexels();
@@ -183,7 +160,7 @@ public class GLScene {
         setTextureBuffer(data);
     }
 
-    public void addShapesColor(ArrayList<GLShape> shapes) {
+    private void addShapesColor(ArrayList<GLShape> shapes) {
         ArrayList<Float> stockData = new ArrayList<>();
         for (int i = 0; i < shapes.size(); i++) {
             float[] texels = shapes.get(i).getColor();
@@ -199,15 +176,12 @@ public class GLScene {
         setColorBuffer(data);
     }
 
-    void initTexture() {
-
-    }
-
     public void doTranslate(float dx, float dy) {
         mTranformationInterface.onTranslate(dx, dy, mTranslateMatrix);
     }
 
-    public FloatBuffer getTextureBuffer() {
-        return mTextureBuffer;
+    public void setBuffers() {
+        addShapesColor(shapes);
+        addShapesTexture(shapes);
     }
 }
