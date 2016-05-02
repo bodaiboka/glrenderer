@@ -67,16 +67,6 @@ public class GLRendererES2 extends GLRenderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background clear color to gray.
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-
-
-        /*for (int i = 0; i < mGLScenes.size(); i++) {
-            for (int j = 0; j < mGLScenes.get(i).getShapes().size(); j++) {
-                GLShape shape = mGLScenes.get(i).getShapes().get(j);
-                if (shape.hasTexture()) {
-                    shape.setTextureHandle(TextureHelper.loadTexture(glConfig.context, shape.getImageId()));
-                }
-            }
-        }*/
         TextureHelper.loadTexture(glConfig.context, glConfig.getTextureImageId);
 
         // Position the eye behind the origin.
