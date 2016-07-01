@@ -19,6 +19,7 @@ public class ShaderProgram {
     private String mFragmentShaderString;
 
     private ArrayList<String> mAttribNames;
+    private ArrayList<String> mUniformNames;
 
     public ShaderProgram() {
         mVertexShaderString = GLConfig.DEFAULT_VERTEX_SHADER;
@@ -30,10 +31,11 @@ public class ShaderProgram {
         mFragmentShaderString = fragmentShader;
     }
 
-    public ShaderProgram(String vertexShader, String fragmentShader, ArrayList<String> attribNames) {
+    public ShaderProgram(String vertexShader, String fragmentShader, ArrayList<String> attribNames, ArrayList<String> uniformNames) {
         mVertexShaderString = vertexShader;
         mFragmentShaderString = fragmentShader;
         mAttribNames = attribNames;
+        mUniformNames = uniformNames;
     }
 
     public String getVertexShaderString() {
@@ -119,7 +121,7 @@ public class ShaderProgram {
         }
     }
 
-    public void linkShadersToProgram() {
+    public ShaderProgram linkShadersToProgram() {
         // Create a program object and store the handle to it.
         int programHandle = GLES20.glCreateProgram();
         if (programHandle != 0)
@@ -154,16 +156,19 @@ public class ShaderProgram {
         else {
             mProgramId = programHandle;
         }
+        return this;
     }
 
-    public void loadShaders(String vertexShaderString, String fragmentShaderString) {
+    public ShaderProgram loadShaders(String vertexShaderString, String fragmentShaderString) {
         loadVertexShader(vertexShaderString);
         loadFragmentShader(fragmentShaderString);
+        return this;
     }
 
-    public void loadShaders() {
+    public ShaderProgram loadShaders() {
         loadVertexShader(mVertexShaderString);
         loadFragmentShader(mFragmentShaderString);
+        return this;
     }
 
 }

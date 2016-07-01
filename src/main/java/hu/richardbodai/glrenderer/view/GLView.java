@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import java.util.ArrayList;
 
 import hu.richardbodai.glrenderer.renderer.GLRenderer;
+import hu.richardbodai.glrenderer.util.text.TextManager;
 
 /**
  * Created by richardbodai on 4/4/16.
@@ -44,5 +45,14 @@ public class GLView {
             scenes.get(i).setBuffers();
         }
         mRenderer.setGLScenes(scenes);
+        //getGLSurfaceView().requestRender();
+    }
+
+    public void setTextManagers(ArrayList<TextManager> textManagers) {
+        mRenderer.setTextManagers(textManagers);
+    }
+
+    public void render() {
+        getGLSurfaceView().requestRender();
     }
 }

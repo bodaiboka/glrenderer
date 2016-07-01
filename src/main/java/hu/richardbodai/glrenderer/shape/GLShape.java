@@ -20,4 +20,5 @@ public interface GLShape {
 
     int getImageId();
 
+    float[] getBackBufferColor();
 }

@@ -2,6 +2,9 @@ package hu.richardbodai.glrenderer.config;
 
 import android.content.Context;
 
+import hu.richardbodai.glrenderer.renderer.OnClicklistener;
+import hu.richardbodai.glrenderer.util.text.TextManager;
+
 /**
  * Created by richardbodai on 4/4/16.
  */
@@ -10,6 +13,7 @@ public class GLConfig {
     public static int defaultProgramHandle;
     public static int textureProgramHandle;
     public int getTextureImageId;
+    public int getTextureTextId;
 
     public enum GL_VERSION {
         ES_1, ES_2
@@ -104,6 +108,16 @@ public class GLConfig {
     public PROJECTION_MODE projection_mode;
     public String vertex_shader;
     public String fragment_shader;
+    public TextManager textManager;
+    private OnClicklistener onClicklistener;
+
+    public OnClicklistener getOnClicklistener() {
+        return onClicklistener;
+    }
+
+    public void setOnClicklistener(OnClicklistener onClicklistener) {
+        this.onClicklistener = onClicklistener;
+    }
 
     public Context context;
     public GLConfig() {
@@ -111,6 +125,7 @@ public class GLConfig {
         projection_mode = PROJECTION_MODE.PERSPECTIVE;
         vertex_shader = vs_Image;
         fragment_shader = fs_Image;
+        textManager = new TextManager();
     }
 
 }

@@ -27,6 +27,26 @@ public class Triangle implements GLShape {
         };
     }
 
+    public Triangle(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
+        mX1 = x1;
+        mX2 = x2;
+        mX3 = x3;
+        mY1 = y1;
+        mY2 = y2;
+        mY3 = y3;
+        mZ1 = z1;
+        mZ2 = z2;
+        mZ3 = z3;
+        mColor = new float[] {
+                1.0f, 1.0f, 1.0f, 1.0f
+        };
+        uvs = new float[] {
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+                0.5f, 0.0f
+        };
+    }
+
     public GLShape setColor(float r, float g, float b, float a) {
         mColor[0] = r;
         mColor[1] = g;
@@ -81,5 +101,10 @@ public class Triangle implements GLShape {
     @Override
     public int getImageId() {
         return 0;
+    }
+
+    @Override
+    public float[] getBackBufferColor() {
+        return new float[0];
     }
 }

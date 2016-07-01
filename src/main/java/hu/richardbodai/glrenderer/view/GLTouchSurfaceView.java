@@ -1,6 +1,7 @@
 package hu.richardbodai.glrenderer.view;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -47,8 +48,13 @@ public class GLTouchSurfaceView extends GLSurfaceView {
     DirectionY directionY;
     DirectionX directionX;
 
+    float moveX = 0.0f;
+    float moveY = 0.0f;
+
     public GLTouchSurfaceView(Context context) {
         super(context);
+        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        getHolder().setFormat(PixelFormat.RGBA_8888);
     }
 
     @Override
@@ -64,10 +70,12 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         float y = event.getY();
         actualY = y;
         actualX = x;
+        mRenderer.setActX(actualX);
+        mRenderer.setActY(actualY);
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
-                Log.i("nn", "down");
+                /*Log.i("nn", "down");*/
                 timerForTracking = new Timer();
                 timerForTracking.schedule(new TimerTask() {
                     @Override
@@ -78,7 +86,10 @@ public class GLTouchSurfaceView extends GLSurfaceView {
                 break;
 
             case MotionEvent.ACTION_UP:
-                Log.i("nn", "up");
+                if ((Math.abs(moveX)<5.0f) && (Math.abs(moveY)<5.0f)) {
+                    mRenderer.setOnClick(true);
+                }
+                /*Log.i("nn", "up");*/
                 timerForTracking.cancel();
                 track();
                 timerForAcceleration = new Timer();
@@ -103,6 +114,8 @@ public class GLTouchSurfaceView extends GLSurfaceView {
                         checkSpeed();
                     }
                 }, new Date(), 10);
+                moveX = 0.0f;
+                moveY = 0.0f;
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -111,6 +124,8 @@ public class GLTouchSurfaceView extends GLSurfaceView {
 
                 mRenderer.doTranslate(dx, dy);
                 requestRender();
+                moveX += dx;
+                moveY += dy;
                 break;
         }
 
@@ -127,7 +142,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         }
         float s = actualY - prevY;
         float v = s / 0.01f;
-        Log.i("Task", "track prevY = " + mPreviousY + " actY = " + actualY + " v = " + v);
+        /*Log.i("Task", "track prevY = " + mPreviousY + " actY = " + actualY + " v = " + v);*/
         prevY = actualY;
         n++;
         speedY = v;
@@ -140,7 +155,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
 
         s = actualX - prevX;
         v = s / 0.01f;
-        Log.i("Task", "track prevX = " + mPreviousY + " actX = " + actualY + " v = " + v);
+        /*Log.i("Task", "track prevX = " + mPreviousY + " actX = " + actualY + " v = " + v);*/
         prevX = actualX;
         n++;
         speedX = v;
@@ -162,7 +177,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         else {
             speedY = 0;
         }
-        Log.i("Acceleration", "accdown");
+        /*Log.i("Acceleration", "accdown");*/
     }
 
     private void accelerateUp() {
@@ -177,7 +192,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         else {
             speedY = 0;
         }
-        Log.i("Acceleration", "accup");
+        /*Log.i("Acceleration", "accup");*/
     }
 
     private void accelerateRight() {
@@ -190,7 +205,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         else {
             speedX = 0;
         }
-        Log.i("Acceleration", "accdown");
+        /*Log.i("Acceleration", "accdown");*/
     }
 
     private void accelerateLeft() {
@@ -204,7 +219,7 @@ public class GLTouchSurfaceView extends GLSurfaceView {
         else {
             speedX = 0;
         }
-        Log.i("Acceleration", "accup");
+        /*Log.i("Acceleration", "accup");*/
     }
 
     private void checkSpeed() {

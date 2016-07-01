@@ -25,12 +25,30 @@ public class Rectangle implements GLShape {
     private int mImageId;
     public boolean hasTexture = false;
     private FloatBuffer colorBuffer;
+    private FloatBuffer backBufferColorBuffer;
     float[] mColors;
+    float[] mBackBufferColor;
 
 
     public Rectangle(float upperLeftX, float upperLeftY, float downerRightX, float downerRightY) {
         triangle1 = new Triangle(upperLeftX, upperLeftY, upperLeftX, downerRightY, downerRightX, downerRightY);
         triangle2 = new Triangle(upperLeftX, upperLeftY, downerRightX, downerRightY, downerRightX, upperLeftY);
+        uvs = new float[] {
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 0.0f
+        };
+        setVertexBuffer(convertToGLFormat());
+        setTextureBuffer(uvs);
+        setColor(1,1,1,1);
+    }
+
+    public Rectangle(float upperLeftX, float upperLeftY, float downerRightX, float downerRightY, float z) {
+        triangle1 = new Triangle(upperLeftX, upperLeftY, z, upperLeftX, downerRightY, z, downerRightX, downerRightY, z);
+        triangle2 = new Triangle(upperLeftX, upperLeftY, z, downerRightX, downerRightY, z, downerRightX, upperLeftY, z);
         uvs = new float[] {
                 0.0f, 0.0f,
                 0.0f, 1.0f,
@@ -64,6 +82,39 @@ public class Rectangle implements GLShape {
         return this;
     }
 
+    public Rectangle setBackBufferColor(byte br, byte bg, byte bb, byte ba) {
+        float r = (float)(((int)(br)& 0xFF) / 255.0f);
+        float g = (float)(((int)(bg)& 0xFF) / 255.0f);
+        float b = (float)(((int)(bb)& 0xFF) / 255.0f);
+        float a = (float)(((int)(ba)& 0xFF) / 255.0f);
+
+        float colors[] = {
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a
+        };
+        mBackBufferColor = colors;
+        setBackBufferColorBuffer(colors);
+        return this;
+    }
+
+    /*public Rectangle setBackBufferColor(float r, float g, float b, float a) {
+        float colors[] = {
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a,
+                r,g,b,a
+        };
+        mBackBufferColor = colors;
+        setBackBufferColorBuffer(colors);
+        return this;
+    }*/
+
     @Override
     public float[] convertToGLFormat() {
         float[] data = new float[18];
@@ -93,6 +144,11 @@ public class Rectangle implements GLShape {
         colorBuffer = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         colorBuffer.put(data).position(0);
     }
+
+    public void setBackBufferColorBuffer(float[] data) {
+        backBufferColorBuffer = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        backBufferColorBuffer.put(data).position(0);
+    }
     
     public void setTextureImage(int id) {
         mImageId = id;
@@ -101,6 +157,11 @@ public class Rectangle implements GLShape {
 
     public int getImageId() {
         return mImageId;
+    }
+
+    @Override
+    public float[] getBackBufferColor() {
+        return mBackBufferColor;
     }
 
     @Override

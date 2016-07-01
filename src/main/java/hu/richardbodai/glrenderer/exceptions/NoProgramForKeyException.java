@@ -3,7 +3,7 @@ package hu.richardbodai.glrenderer.exceptions;
 /**
  * Created by richardbodai on 5/2/16.
  */
-public class NoProgramForKeyException extends Exception {
+public class NoProgramForKeyException extends RuntimeException {
 
     String message;
 

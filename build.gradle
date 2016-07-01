@@ -1,4 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'hu.richardbodai.glrenderer' // Change this to match your package name
+version = '1.0.0.0' // Change this to match your version number
 
 android {
     compileSdkVersion 23
@@ -7,8 +12,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 1000
+        versionName "1.0.0.0"
     }
     buildTypes {
         release {
@@ -16,6 +21,49 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+task generateJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task generateJavadocsJar(type: Jar) {
+    from generateJavadocs.destinationDir
+    classifier 'javadoc'
+}
+
+generateJavadocsJar.dependsOn generateJavadocs
+
+artifacts {
+    archives generateJavadocsJar
+    archives generateSourcesJar
+}
+
+bintray {
+    user = 'boka'
+    key = 'c62f4ebaa620fa6ea771301c8a385d31e8e8829b'
+    pkg {
+        repo = 'maven'
+        name = 'hu.richardbodai.glrenderer'
+
+        version {
+            name = '1.0.0.0'
+            desc = 'Android library for 2D OpenGL graphics'
+            released  = new Date()
+            vcsTag = '1.0.0.0'
+        }
+
+        licenses = ['Apache-2.0']
+        vcsUrl = ''
+        websiteUrl = ''
+    }
+    configurations = ['archives']
 }
 
 dependencies {

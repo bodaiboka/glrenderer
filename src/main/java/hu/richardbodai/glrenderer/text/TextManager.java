@@ -1,54 +1,27 @@
-package hu.richardbodai.glrenderer.util.text;
+package hu.richardbodai.glrenderer.text;
 
-import android.opengl.GLES20;
-import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 
-import hu.richardbodai.glrenderer.config.GLConfig;
-import hu.richardbodai.glrenderer.handler.ShaderManager;
-import hu.richardbodai.glrenderer.handler.ShaderProgram;
-import hu.richardbodai.glrenderer.util.TextureHelper;
-import hu.richardbodai.glrenderer.view.GLScene;
-import hu.richardbodai.glrenderer.view.ITransformation;
+import android.opengl.GLES20;
 
-/**
- * Created by richardbodai on 4/25/16.
- */
-public class TextManager extends GLScene {
+import hu.richardbodai.glrenderer.util.text.TextObject;
 
-    ShaderProgram shaderProgram;
-    private final int BYTES_PER_FLOAT = 4;
-    private float[] mUVsData;
+public class TextManager {
+
     private static final float RI_TEXT_UV_BOX_WIDTH = 0.125f;
     private static final float RI_TEXT_WIDTH = 32.0f;
     private static final float RI_TEXT_SPACESIZE = 20f;
-
-    /*private final String APOSITION = "vPosition";
-    private final String ATEXCOORD = "a_texCoord";
-    private final String ACOLOR = "a_Color";
-    private final String UMVPMATRIX = "uMVPMatrix";
-    private final String UTEXTURE = "s_texture";*/
-
-    private final String APOSITION = "a_Position";
-    private final String ATEXCOORD = "a_TexCoord";
-    private final String ACOLOR = "a_Color";
-    private final String UMVPMATRIX = "u_MVPMatrix";
-    private final String UTEXTURE = "s_Texture";
 
     private FloatBuffer vertexBuffer;
     private FloatBuffer textureBuffer;
     private FloatBuffer colorBuffer;
     private ShortBuffer drawListBuffer;
-
-    private float[] mModelMatrix = new float[16];
-    private float[] mTranslateMatrix = new float[16];
 
     private float[] vecs;
     private float[] uvs;
@@ -63,12 +36,6 @@ public class TextManager extends GLScene {
     private int texturenr;
 
     private float uniformscale;
-
-    private ITransformation mTranformationInterface;
-
-    ArrayList<String> attribs = new ArrayList<>();
-    ArrayList<String> uniforms = new ArrayList<>();
-    FloatBuffer mTextureBuffer;
 
     public static int[] l_size = {36,29,30,34,25,25,34,33,
             11,20,31,24,48,35,39,29,
@@ -94,54 +61,6 @@ public class TextManager extends GLScene {
 
         // init as 0 as default
         texturenr = 0;
-
-        attribs.add(APOSITION);
-        attribs.add(ATEXCOORD);
-        attribs.add(ACOLOR);
-        uniforms.add(UMVPMATRIX);
-        uniforms.add(UTEXTURE);
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.setIdentityM(mTranslateMatrix, 0);
-
-        mTranformationInterface = new ITransformation() {
-            @Override
-            public void onTranslate(float dx, float dy, float[] translationMatrix) {
-                Matrix.translateM(translationMatrix, 0, dx, dy, 0.0f);
-            }
-        };
-    }
-
-    public TextManager(ITransformation transformation)
-    {
-        // Create our container
-        txtcollection = new Vector<TextObject>();
-
-        // Create the arrays
-        vecs = new float[3 * 10];
-        colors = new float[4 * 10];
-        uvs = new float[2 * 10];
-        indices = new short[10];
-
-        // init as 0 as default
-        texturenr = 0;
-
-        attribs.add(APOSITION);
-        attribs.add(ATEXCOORD);
-        attribs.add(ACOLOR);
-        uniforms.add(UMVPMATRIX);
-        uniforms.add(UTEXTURE);
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.setIdentityM(mTranslateMatrix, 0);
-
-        mTranformationInterface = transformation;
-    }
-
-    public void doTranslate(float dx, float dy) {
-        mTranformationInterface.onTranslate(dx, dy, mTranslateMatrix);
-    }
-
-    public void creatShaderProgram() {
-        shaderProgram = ShaderManager.createShaderProgram(GLConfig.vs_Image, GLConfig.fs_Image, attribs, uniforms);
     }
 
     public void addText(TextObject obj)
@@ -154,6 +73,7 @@ public class TextManager extends GLScene {
     {
         texturenr = val;
     }
+
 
     public void AddCharRenderInformation(float[] vec, float[] cs, float[] uv, short[] indi)
     {
@@ -170,7 +90,7 @@ public class TextManager extends GLScene {
             index_vecs++;
         }
 
-        // We should add the colors.
+        // We should add the colors, so we can use the same texture for multiple effects.
         for(int i=0;i<cs.length;i++)
         {
             colors[index_colors] = cs[i];
@@ -231,7 +151,7 @@ public class TextManager extends GLScene {
         PrepareDrawInfo();
 
         // Using the iterator protects for problems with concurrency
-        for(Iterator< TextObject > it = txtcollection.iterator(); it.hasNext() ; )
+        for( Iterator< TextObject > it = txtcollection.iterator(); it.hasNext() ; )
         {
             TextObject txt = it.next();
             if(txt!=null)
@@ -242,6 +162,91 @@ public class TextManager extends GLScene {
                 }
             }
         }
+    }
+
+    public void Draw(float[] m)
+    {
+        // Set the correct shader for our grid object.
+        GLES20.glUseProgram(riGraphicTools.sp_Text);
+
+        // The vertex buffer.
+        ByteBuffer bb = ByteBuffer.allocateDirect(vecs.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        vertexBuffer = bb.asFloatBuffer();
+        vertexBuffer.put(vecs);
+        vertexBuffer.position(0);
+
+        // The vertex buffer.
+        ByteBuffer bb3 = ByteBuffer.allocateDirect(colors.length * 4);
+        bb3.order(ByteOrder.nativeOrder());
+        colorBuffer = bb3.asFloatBuffer();
+        colorBuffer.put(colors);
+        colorBuffer.position(0);
+
+        // The texture buffer
+        ByteBuffer bb2 = ByteBuffer.allocateDirect(uvs.length * 4);
+        bb2.order(ByteOrder.nativeOrder());
+        textureBuffer = bb2.asFloatBuffer();
+        textureBuffer.put(uvs);
+        textureBuffer.position(0);
+
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(indices.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(indices);
+        drawListBuffer.position(0);
+
+        // get handle to vertex shader's vPosition member
+        int mPositionHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Text, "vPosition");
+
+        // Enable a handle to the triangle vertices
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+        // Prepare the background coordinate data
+        GLES20.glVertexAttribPointer(mPositionHandle, 3,
+                GLES20.GL_FLOAT, false,
+                0, vertexBuffer);
+
+        int mTexCoordLoc = GLES20.glGetAttribLocation(riGraphicTools.sp_Text, "a_texCoord" );
+
+        // Prepare the texturecoordinates
+        GLES20.glVertexAttribPointer ( mTexCoordLoc, 2, GLES20.GL_FLOAT,
+                false,
+                0, textureBuffer);
+
+        GLES20.glEnableVertexAttribArray ( mPositionHandle );
+        GLES20.glEnableVertexAttribArray ( mTexCoordLoc );
+
+        int mColorHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Text, "a_Color");
+
+        // Enable a handle to the triangle vertices
+        GLES20.glEnableVertexAttribArray(mColorHandle);
+
+        // Prepare the background coordinate data
+        GLES20.glVertexAttribPointer(mColorHandle, 4,
+                GLES20.GL_FLOAT, false,
+                0, colorBuffer);
+
+        // get handle to shape's transformation matrix
+        int mtrxhandle = GLES20.glGetUniformLocation(riGraphicTools.sp_Text, "uMVPMatrix");
+
+        // Apply the projection and view transformation
+        GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, m, 0);
+
+        int mSamplerLoc = GLES20.glGetUniformLocation (riGraphicTools.sp_Text, "s_texture" );
+
+        // Set the sampler texture unit to our selected id
+        GLES20.glUniform1i ( mSamplerLoc, texturenr);
+
+        // Draw the triangle
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+
+        // Disable vertex array
+        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(mTexCoordLoc);
+        GLES20.glDisableVertexAttribArray(mColorHandle);
+
     }
 
     private int convertCharToIndex(int c_val)
@@ -281,123 +286,11 @@ public class TextManager extends GLScene {
 
 
 
-    @Override
-    public void draw(float[] pMVPMatrix, float[] pViewMatrix, float[] pProjectionMatrix)
-    {
-        // Set the correct shader for our grid object.
-        GLES20.glUseProgram(shaderProgram.getmProgramId());
-
-        Matrix.multiplyMM(pMVPMatrix, 0, pViewMatrix, 0, mModelMatrix, 0);
-        Matrix.multiplyMM(pMVPMatrix, 0, pMVPMatrix, 0, mTranslateMatrix, 0);
-        Matrix.multiplyMM(pMVPMatrix, 0, pProjectionMatrix, 0, pMVPMatrix, 0);
-
-        // The vertex buffer.
-        ByteBuffer bb = ByteBuffer.allocateDirect(vecs.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        vertexBuffer = bb.asFloatBuffer();
-        vertexBuffer.put(vecs);
-        vertexBuffer.position(0);
-
-        // The vertex buffer.
-        ByteBuffer bb3 = ByteBuffer.allocateDirect(colors.length * 4);
-        bb3.order(ByteOrder.nativeOrder());
-        colorBuffer = bb3.asFloatBuffer();
-        colorBuffer.put(colors);
-        colorBuffer.position(0);
-
-        // The texture buffer
-        ByteBuffer bb2 = ByteBuffer.allocateDirect(uvs.length * 4);
-        bb2.order(ByteOrder.nativeOrder());
-        textureBuffer = bb2.asFloatBuffer();
-        textureBuffer.put(uvs);
-        textureBuffer.position(0);
-
-        // initialize byte buffer for the draw list
-        ByteBuffer dlb = ByteBuffer.allocateDirect(indices.length * 2);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(indices);
-        drawListBuffer.position(0);
-
-        // get handle to vertex shader's vPosition member
-        int mPositionHandle = GLES20.glGetAttribLocation(shaderProgram.getmProgramId(),
-                APOSITION);
-
-        // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Prepare the background coordinate data
-        GLES20.glVertexAttribPointer(mPositionHandle, 3,
-                GLES20.GL_FLOAT, false,
-                0, vertexBuffer);
-
-        int mTexCoordLoc = GLES20.glGetAttribLocation(shaderProgram.getmProgramId(),
-                ATEXCOORD );
-
-        // Prepare the texturecoordinates
-       /* GLES20.glVertexAttribPointer ( mTexCoordLoc, 2, GLES20.GL_FLOAT,
-                false,
-                0, textureBuffer);*/
-
-        GLES20.glEnableVertexAttribArray ( mPositionHandle );
-
-        int mColorHandle = GLES20.glGetAttribLocation(shaderProgram.getmProgramId(),
-                ACOLOR);
-
-        // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(mColorHandle);
-
-        // Prepare the background coordinate data
-        GLES20.glVertexAttribPointer(mColorHandle, 4,
-                GLES20.GL_FLOAT, false,
-                0, colorBuffer);
-
-        // get handle to shape's transformation matrix
-        int mtrxhandle = GLES20.glGetUniformLocation(shaderProgram.getmProgramId(),
-                UMVPMATRIX);
-
-        // Apply the projection and view transformation
-        GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, pMVPMatrix, 0);
-
-        int mSamplerLoc = GLES20.glGetUniformLocation (shaderProgram.getmProgramId(),
-                UTEXTURE );
-
-        // Set the sampler texture unit to our selected id
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexCoordLoc);
-        GLES20.glUniform1i(mSamplerLoc, 0);
-        // Prepare the texturecoordinates
-        GLES20.glVertexAttribPointer(mTexCoordLoc, 2, GLES20.GL_FLOAT,
-                false,
-                0, textureBuffer);
-        GLES20.glEnableVertexAttribArray(mTexCoordLoc);
-
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-
-        // Draw the triangle
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.length,
-                GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-
-        /*GLES20.glDisable(GLES20.GL_BLEND);*/
-
-        // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-        GLES20.glDisableVertexAttribArray(mTexCoordLoc);
-        GLES20.glDisableVertexAttribArray(mColorHandle);
-    }
-
-    public void setTextureBuffer(float[] data) {
-        mUVsData = data;
-        mTextureBuffer = ByteBuffer.allocateDirect(data.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mTextureBuffer.put(data).position(0);
-    }
-
     private void convertTextToTriangleInfo(TextObject val)
     {
         // Get attributes from text object
         float x = val.x;
         float y = val.y;
-        float z = val.z;
         String text = val.text;
 
         // Create
@@ -430,17 +323,17 @@ public class TextManager extends GLScene {
             float[] colors = new float[16];
 
             vec[0] = x;
-            vec[1] = y;
-            vec[2] = z;
+            vec[1] = y + (RI_TEXT_WIDTH * uniformscale);
+            vec[2] = 0.99f;
             vec[3] = x;
-            vec[4] = y + (RI_TEXT_WIDTH * uniformscale);
-            vec[5] = z;
+            vec[4] = y;
+            vec[5] = 0.99f;
             vec[6] = x + (RI_TEXT_WIDTH * uniformscale);
-            vec[7] = y + (RI_TEXT_WIDTH * uniformscale);
-            vec[8] = z;
+            vec[7] = y;
+            vec[8] = 0.99f;
             vec[9] = x + (RI_TEXT_WIDTH * uniformscale);
-            vec[10] = y;
-            vec[11] = z;
+            vec[10] = y + (RI_TEXT_WIDTH * uniformscale);
+            vec[11] = 0.99f;
 
             colors = new float[]
                     {val.color[0], val.color[1], val.color[2], val.color[3],
@@ -468,8 +361,6 @@ public class TextManager extends GLScene {
         }
     }
 
-
-
     public float getUniformscale() {
         return uniformscale;
     }
@@ -478,5 +369,4 @@ public class TextManager extends GLScene {
         this.uniformscale = uniformscale;
     }
 }
-
 
